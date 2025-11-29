@@ -26,6 +26,12 @@ const ImageUploadZone = ({ onUpload, uploading }) => {
     event.preventDefault();
   };
 
+  const handleBoxClick = () => {
+    if (fileInputRef.current !== null && fileInputRef.current !== undefined) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <Box
       onDrop={handleDrop}
@@ -45,7 +51,7 @@ const ImageUploadZone = ({ onUpload, uploading }) => {
           transform: 'translateY(-2px)',
         },
       }}
-      onClick={() => fileInputRef.current?.click()}
+      onClick={handleBoxClick}
     >
       <input
         ref={fileInputRef}
