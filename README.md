@@ -17,6 +17,8 @@ A full-stack image upload and management application with a beautiful Material-U
 - ✅ **File Validation** - Type checking, size limits, and duplicate detection
 - 📱 **Responsive Design** - Works seamlessly on desktop and mobile devices
 - 🔒 **CORS Enabled** - Secure cross-origin resource sharing
+- 🤖 **AI-Powered** - Automatic image embedding generation using SigLIP
+- 🔍 **Vector Storage** - Embeddings stored in Qdrant for future search capabilities
 
 ## 📋 Table of Contents
 
@@ -45,6 +47,12 @@ A full-stack image upload and management application with a beautiful Material-U
 - **Pydantic** - Data validation
 - **Pillow (PIL)** - Image processing and validation
 - **Python 3.11+** - Programming language
+
+### AI/ML & Vector Database
+- **SigLIP** (google/siglip-base-patch16-224) - Image embedding model
+- **PyTorch** - Deep learning framework
+- **Transformers** - Hugging Face model library
+- **Qdrant** - Vector database for embeddings
 
 ## 📁 Project Structure
 
@@ -102,12 +110,22 @@ git clone <repository-url>
 cd ImageMind
 ```
 
-### 2. Backend Setup
+### 2. Start Qdrant (Vector Database)
 
 ```bash
 # Navigate to Backend directory
 cd Backend
 
+# Start Qdrant using Docker Compose
+docker-compose up -d
+
+# Verify Qdrant is running
+curl http://localhost:6333/health
+```
+
+### 3. Backend Setup
+
+```bash
 # Create virtual environment
 python -m venv venv
 
@@ -117,14 +135,14 @@ venv\Scripts\activate
 # Linux/Mac:
 source venv/bin/activate
 
-# Install dependencies
+# Install dependencies (this will download ~500MB SigLIP model on first run)
 pip install -r requirements.txt
 
 # (Optional) Create .env file for custom configuration
 copy .env.example .env
 ```
 
-### 3. Frontend Setup
+### 4. Frontend Setup
 
 ```bash
 # Navigate to Frontend directory (open new terminal)
@@ -136,6 +154,12 @@ npm install
 
 ## 🚀 Running the Application
 
+### Prerequisites Check
+
+Before starting, ensure:
+- ✅ Docker is running
+- ✅ Qdrant container is up: `docker ps | grep qdrant`
+
 ### Start Backend Server
 
 ```bash
@@ -145,16 +169,23 @@ cd Backend
 venv\Scripts\activate  # Windows
 # source venv/bin/activate  # Linux/Mac
 
-# Run the server
+# Run the server (will load SigLIP model on startup - takes ~10 seconds)
 python run.py
 
 # Or use uvicorn directly
 uvicorn app.main:app --reload --port 8000
 ```
 
+**Startup Process:**
+1. Loading SigLIP embedding model (~5-10 seconds)
+2. Connecting to Qdrant (with 3 retries)
+3. Creating/verifying collection
+
 Backend will be available at: **http://localhost:8000**
 
 API Documentation: **http://localhost:8000/docs**
+
+Health Check: **http://localhost:8000/health**
 
 ### Start Frontend Server
 
@@ -355,7 +386,49 @@ npm test
 
 ## 🐛 Troubleshooting
 
+### Qdrant Issues
+
+**Qdrant not starting:**
+```bash
+# Check if Docker is running
+docker ps
+
+# Restart Qdrant
+cd Backend
+docker-compose down
+docker-compose up -d
+
+# Check Qdrant logs
+docker-compose logs qdrant
+```
+
+**Connection refused:**
+```bash
+# Verify Qdrant is accessible
+curl http://localhost:6333/health
+
+# Check if port 6333 is available
+netstat -an | findstr 6333  # Windows
+lsof -i :6333  # Linux/Mac
+```
+
 ### Backend Issues
+
+**Model download fails:**
+```bash
+# Check internet connection
+# Model will be cached in ~/.cache/huggingface/
+# Requires ~500MB download on first run
+```
+
+**Backend won't start:**
+```bash
+# Check startup logs for specific error
+# Common issues:
+# 1. Qdrant not running → Start with docker-compose up -d
+# 2. Model download failed → Check internet connection
+# 3. Port in use → Change port or kill process
+```
 
 **Module not found error:**
 ```bash
@@ -366,10 +439,10 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-**Port already in use:**
+**Out of memory:**
 ```bash
-# Change port in run.py or use different port
-uvicorn app.main:app --reload --port 8001
+# SigLIP model requires ~2GB RAM
+# Close other applications or use smaller model
 ```
 
 ### Frontend Issues

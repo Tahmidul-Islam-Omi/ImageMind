@@ -37,9 +37,9 @@ const ImageUploadZone = ({ onUpload, uploading }) => {
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       sx={{
-        border: '3px dashed rgba(255, 255, 255, 0.5)',
-        borderRadius: 3,
-        p: 6,
+        border: '2px dashed rgba(255, 255, 255, 0.5)',
+        borderRadius: 2,
+        p: 3,
         textAlign: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'blur(10px)',
@@ -63,16 +63,16 @@ const ImageUploadZone = ({ onUpload, uploading }) => {
       />
 
       {uploading ? (
-        <CircularProgress sx={{ color: 'white', mb: 2 }} size={60} />
+        <CircularProgress sx={{ color: 'white', mb: 1.5 }} size={40} />
       ) : (
-        <CloudUploadIcon sx={{ fontSize: 80, color: 'white', mb: 2 }} />
+        <CloudUploadIcon sx={{ fontSize: 50, color: 'white', mb: 1.5 }} />
       )}
 
-      <Typography variant="h5" sx={{ color: 'white', fontWeight: 600, mb: 1 }}>
+      <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 0.5 }}>
         {uploading ? 'Uploading...' : 'Drop your images here'}
       </Typography>
 
-      <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 3 }}>
+      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 2 }}>
         or click to browse
       </Typography>
 
@@ -80,11 +80,12 @@ const ImageUploadZone = ({ onUpload, uploading }) => {
         variant="contained"
         startIcon={<ImageIcon />}
         disabled={uploading}
+        size="small"
         sx={{
           backgroundColor: 'white',
           color: '#667eea',
-          px: 4,
-          py: 1.5,
+          px: 3,
+          py: 1,
           fontWeight: 600,
           '&:hover': {
             backgroundColor: 'rgba(255, 255, 255, 0.9)',

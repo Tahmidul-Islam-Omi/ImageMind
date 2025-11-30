@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   Card,
-  CardMedia,
   CardActions,
   IconButton,
   Box,
@@ -11,18 +10,32 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import { downloadFile } from '../../utils/downloadHelper';
 
 const ImageCard = ({ image, onRemove }) => {
   const [hover, setHover] = useState(false);
 
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = image.url;
-    link.download = image.name;
-    link.click();
+  const handleDownload = async (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const success = await downloadFile(image.url, image.name);
+    if (!success) {
+      console.error('Failed to download:', image.name);
+    }
   };
 
-  console.log('Rendering image:', image.name, image.url);
+  const handleDelete = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    onRemove(image.id);
+  };
+
+  const handleZoom = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    window.open(image.url, '_blank');
+  };
 
   return (
     <Card
@@ -51,8 +64,7 @@ const ImageCard = ({ image, onRemove }) => {
             height: '100%',
             objectFit: 'cover',
           }}
-          onError={(e) => console.error('Image load error:', image.name, e)}
-          onLoad={() => console.log('Image loaded:', image.name)}
+          onError={() => console.error('Failed to load image:', image.name)}
         />
 
         <Fade in={hover}>
@@ -87,6 +99,7 @@ const ImageCard = ({ image, onRemove }) => {
               <IconButton
                 size="small"
                 onClick={handleDownload}
+                title="Download image"
                 sx={{
                   color: 'white',
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -97,6 +110,8 @@ const ImageCard = ({ image, onRemove }) => {
               </IconButton>
               <IconButton
                 size="small"
+                onClick={handleZoom}
+                title="Zoom image"
                 sx={{
                   color: 'white',
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -107,7 +122,8 @@ const ImageCard = ({ image, onRemove }) => {
               </IconButton>
               <IconButton
                 size="small"
-                onClick={() => onRemove(image.id)}
+                onClick={handleDelete}
+                title="Delete image"
                 sx={{
                   color: 'white',
                   backgroundColor: 'rgba(244, 67, 54, 0.8)',

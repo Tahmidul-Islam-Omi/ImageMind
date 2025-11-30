@@ -17,6 +17,14 @@ class Settings(BaseSettings):
     # CORS Configuration
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
     
+    # Qdrant Configuration
+    qdrant_host: str = "localhost"
+    qdrant_port: int = 6333
+    qdrant_collection: str = "image_embeddings"
+    
+    # Embedding Model Configuration
+    embedding_model: str = "google/siglip-base-patch16-224"
+    
     class Config:
         env_file = ".env"
         case_sensitive = False

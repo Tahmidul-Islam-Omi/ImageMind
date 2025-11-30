@@ -5,9 +5,14 @@ from datetime import datetime
 from fastapi import UploadFile, HTTPException
 from PIL import Image
 import io
+import logging
 
 from app.config.settings import settings
 from app.models.image import ImageResponse
+from app.services.embedding_service import embedding_service
+from app.services.qdrant_service import qdrant_service
+
+logger = logging.getLogger(__name__)
 
 
 class ImageService:
@@ -65,6 +70,35 @@ class ImageService:
         with open(file_path, "wb") as f:
             f.write(content)
         
+        # Generate and store embedding
+        try:
+            # Open image for embedding generation
+            image = Image.open(io.BytesIO(content))
+            
+            # Generate embedding
+            embedding = embedding_service.generate_embedding(image)
+            
+            # Prepare metadata
+            metadata = {
+                "filename": file.filename,
+                "file_path": str(file_path),
+                "uploaded_at": datetime.now().isoformat(),
+                "file_size": len(content),
+                "image_width": image.width,
+                "image_height": image.height,
+                "mime_type": file.content_type or "image/jpeg"
+            }
+            
+            # Store in Qdrant
+            qdrant_service.store_embedding(embedding, metadata)
+            
+            logger.info(f"Successfully stored embedding for {file.filename}")
+            
+        except Exception as e:
+            # Log error but don't fail the upload
+            logger.error(f"Failed to store embedding for {file.filename}: {e}")
+            # Image is still saved, embedding can be regenerated later
+        
         # Create response
         return ImageResponse(
             id=file.filename,
@@ -112,7 +146,17 @@ class ImageService:
             )
         
         try:
+            # Delete from file system
             file_path.unlink()
+            
+            # Delete from Qdrant
+            try:
+                qdrant_service.delete_embedding(filename)
+                logger.info(f"Deleted embedding for {filename}")
+            except Exception as e:
+                # Log error but don't fail the deletion
+                logger.error(f"Failed to delete embedding for {filename}: {e}")
+            
             return True
         except Exception as e:
             raise HTTPException(

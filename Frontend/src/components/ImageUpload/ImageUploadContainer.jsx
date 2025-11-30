@@ -85,9 +85,9 @@ const ImageUploadContainer = () => {
       <Paper
         elevation={3}
         sx={{
-          p: 4,
-          mb: 6,
-          borderRadius: 4,
+          p: 3,
+          mb: 4,
+          borderRadius: 3,
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         }}
       >
